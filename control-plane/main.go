@@ -46,7 +46,7 @@ func (f *IdentitySecurityFabric) TriggerKillSwitch(ctx context.Context, blastRad
 		InitiatedBy: initiatedBy,
 		Status:      "executing",
 	}
-
+clear
 	eventJSON, _ := json.Marshal(event)
 	msg := kafka.Message{
 		Key:   []byte(event.ID),
