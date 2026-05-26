@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -52,7 +53,28 @@ var validBlastRadius = map[string]bool{
 	"user": true, "tenant": true, "app": true, "region": true, "global": true,
 }
 
-func NewFabric(configPath string) (*Fabric, error) {
+// findConfigPath locates config.yaml relative to the binary, then falls back to cwd/repo root
+func findConfigPath() string {
+	// 1. Try relative to the binary (for source builds: binary in control-plane/, config in repo root)
+	if ex, err := os.Executable(); err == nil {
+		binDir := filepath.Dir(ex)
+		// Check same directory first, then parent (repo root), then grandparent
+		for _, base := range []string{binDir, filepath.Join(binDir, ".."), filepath.Join(binDir, "..", "..")} {
+			candidate := filepath.Join(base, "config.yaml")
+			if _, err := os.Stat(candidate); err == nil {
+				return candidate
+			}
+		}
+	}
+	// 2. Fallback to current working directory
+	if _, err := os.Stat("config.yaml"); err == nil {
+		return "config.yaml"
+	}
+	return "config.yaml" // let it fail naturally if not found
+}
+
+func NewFabric() (*Fabric, error) {
+	configPath := findConfigPath()
 	data, err := os.ReadFile(configPath)
 	if err != nil {
 		return nil, fmt.Errorf("read config %q: %w", configPath, err)
@@ -63,28 +85,28 @@ func NewFabric(configPath string) (*Fabric, error) {
 	}
 
 	registry := map[string]func(map[string]interface{}) (RevocationProvider, error){
-		"okta":            NewOktaProvider,
-		"azure_ad":        NewAzureADProvider,
-		"ping":            NewPingProvider,
-		"onelogin":        NewOneLoginProvider,
-		"auth0":           NewAuth0Provider,
-		"cognito":         NewCognitoProvider,
-		"cyberark":        NewCyberArkProvider,
-		"delinea":         NewDelineaProvider,
-		"beyondtrust":     NewBeyondTrustProvider,
-		"azure_pim":       NewAzurePIMProvider,
-		"vault":           NewVaultProvider,
-		"aws_secrets":     NewAWSSecretsProvider,
-		"akeyless":        NewAkeylessProvider,
-		"kong":            NewKongProvider,
-		"aws_api_gw":      NewAWSAPIGatewayProvider,
-		"aws_iam":         NewAWSIAMProvider,
-		"gcp_iam":         NewGCPIAMProvider,
-		"zscaler":         NewZscalerProvider,
-		"cloudflare_zt":   NewCloudflareZTProvider,
-		"crowdstrike":     NewCrowdStrikeProvider,
-		"redis":           NewRedisSessionProvider,
-		"istio":           NewIstioProvider,
+		"okta":          NewOktaProvider,
+		"azure_ad":      NewAzureADProvider,
+		"ping":          NewPingProvider,
+		"onelogin":      NewOneLoginProvider,
+		"auth0":         NewAuth0Provider,
+		"cognito":       NewCognitoProvider,
+		"cyberark":      NewCyberArkProvider,
+		"delinea":       NewDelineaProvider,
+		"beyondtrust":   NewBeyondTrustProvider,
+		"azure_pim":     NewAzurePIMProvider,
+		"vault":         NewVaultProvider,
+		"aws_secrets":   NewAWSSecretsProvider,
+		"akeyless":      NewAkeylessProvider,
+		"kong":          NewKongProvider,
+		"aws_api_gw":    NewAWSAPIGatewayProvider,
+		"aws_iam":       NewAWSIAMProvider,
+		"gcp_iam":       NewGCPIAMProvider,
+		"zscaler":       NewZscalerProvider,
+		"cloudflare_zt": NewCloudflareZTProvider,
+		"crowdstrike":   NewCrowdStrikeProvider,
+		"redis":         NewRedisSessionProvider,
+		"istio":         NewIstioProvider,
 	}
 
 	var providers []RevocationProvider
@@ -174,14 +196,13 @@ func (f *Fabric) ListEvents() {
 }
 
 func main() {
-	configPath := flag.String("config", "config.yaml", "Path to provider config")
 	blastRadius := flag.String("blast-radius", "global", "user|tenant|app|region|global")
 	reason := flag.String("reason", "Emergency lockdown", "Reason")
 	initiatedBy := flag.String("initiated-by", "admin@company.com", "Who triggered")
 	list := flag.Bool("list", false, "List all events")
 	flag.Parse()
 
-	fabric, err := NewFabric(*configPath)
+	fabric, err := NewFabric()
 	if err != nil {
 		log.Fatalf("Init failed: %v", err)
 	}
