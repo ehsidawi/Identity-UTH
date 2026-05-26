@@ -1,0 +1,19 @@
+version: "1.0"
+name: "Identity Security Fabric - Kill Switch"
+trigger: "manual_kill_switch"
+stages:
+  - stage: validation
+    steps:
+      - step: verify_approval
+        timeout: 300
+  - stage: revocation
+    parallel: true
+    timeout: 60
+    steps:
+      - step: revoke_okta_tokens
+      - step: revoke_microsoft_tokens
+      - step: revoke_api_keys
+      - step: revoke_secrets
+  - stage: audit
+    steps:
+      - step: write_audit_log
