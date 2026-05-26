@@ -177,7 +177,7 @@ Identity-UTH/
 ├── README.md                          # This file
 ├── QUICKSTART.md                      # 2-minute setup guide
 ├── INSTALL.md                         # Installation methods
-├── LICENSE                            # Proprietary license
+├── LICENSE                            # MIT license
 ├── .gitignore                         # Git ignore rules
 ├── control-plane/
 │   ├── main.go                        # Kill switch logic
@@ -333,7 +333,7 @@ curl -X POST https://events.pagerduty.com/v2/enqueue \
 
 - **[QUICKSTART.md](QUICKSTART.md)** - 2-minute setup
 - **[INSTALL.md](INSTALL.md)** - Installation methods
-- **[LICENSE](LICENSE)** - Proprietary license
+- **[LICENSE](LICENSE)** - MIT license
 
 ---
 
@@ -358,7 +358,7 @@ curl -X POST https://events.pagerduty.com/v2/enqueue \
 
 ## 📜 License
 
-**Internal Use Only - Proprietary**
+**Internal Use Only - MIT**
 
 See [LICENSE](LICENSE) for details.
 
