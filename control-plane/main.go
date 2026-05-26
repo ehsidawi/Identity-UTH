@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+// KillSwitchEvent represents a complete kill switch execution record.
 type KillSwitchEvent struct {
 	ID          string    `json:"id"`
 	Timestamp   time.Time `json:"timestamp"`
@@ -19,6 +20,7 @@ type KillSwitchEvent struct {
 	Actions     []string  `json:"actions"`
 }
 
+// Fabric is the in-memory event store for kill switch executions.
 type Fabric struct {
 	events []KillSwitchEvent
 	mu     sync.Mutex
@@ -28,13 +30,17 @@ func (f *Fabric) TriggerKillSwitch(blastRadius, reason, initiatedBy string) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
+	if blastRadius == "" {
+		blastRadius = "global"
+	}
+
 	event := KillSwitchEvent{
 		ID:          fmt.Sprintf("kill-switch-%d", time.Now().UnixNano()),
 		Timestamp:   time.Now(),
 		BlastRadius: blastRadius,
 		Reason:      reason,
 		InitiatedBy: initiatedBy,
-		Status:      "executing",
+		Status:      "completed",
 		Actions: []string{
 			"✓ Revoking Okta tokens",
 			"✓ Revoking Microsoft tokens",
@@ -46,13 +52,11 @@ func (f *Fabric) TriggerKillSwitch(blastRadius, reason, initiatedBy string) {
 		},
 	}
 
-	event.Status = "completed"
 	f.events = append(f.events, event)
 
 	data, _ := json.MarshalIndent(event, "", "  ")
-	fmt.Printf("\n%s\n\n", string(data))
-	
-	log.Printf("✓ Kill switch executed: %s (blast_radius: %s)", event.ID, blastRadius)
+	fmt.Println("\n" + string(data) + "\n")
+	log.Printf("✓ Kill switch executed: %s (blast_radius: %s)\n", event.ID, blastRadius)
 }
 
 func (f *Fabric) ListEvents() {
@@ -65,7 +69,7 @@ func (f *Fabric) ListEvents() {
 	}
 
 	data, _ := json.MarshalIndent(f.events, "", "  ")
-	fmt.Printf("\n%s\n\n", string(data))
+	fmt.Println("\n" + string(data) + "\n")
 }
 
 func main() {
