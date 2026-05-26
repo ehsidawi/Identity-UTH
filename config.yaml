@@ -1,0 +1,66 @@
+providers:
+  # Workforce IAM
+  - type: okta
+    config: { org_url: "${OKTA_ORG_URL}", api_token: "${OKTA_API_TOKEN}" }
+  - type: azure_ad
+    config: { tenant_id: "${AZURE_TENANT_ID}", client_id: "${AZURE_CLIENT_ID}", client_secret: "${AZURE_CLIENT_SECRET}" }
+  - type: ping
+    config: {}
+  - type: onelogin
+    config: {}
+
+  # CIAM
+  - type: auth0
+    config: {}
+  - type: cognito
+    config: {}
+
+  # PAM
+  - type: cyberark
+    config: {}
+  - type: delinea
+    config: {}
+  - type: beyondtrust
+    config: {}
+
+  # PIM
+  - type: azure_pim
+    config: {}
+
+  # NHI / Secrets
+  - type: vault
+    config: { addr: "${VAULT_ADDR}", token: "${VAULT_TOKEN}" }
+  - type: aws_secrets
+    config: {}
+  - type: akeyless
+    config: {}
+
+  # API Gateways
+  - type: kong
+    config: {}
+  - type: aws_api_gw
+    config: {}
+
+  # Cloud IAM
+  - type: aws_iam
+    config: {}
+  - type: gcp_iam
+    config: {}
+
+  # Zero Trust
+  - type: zscaler
+    config: {}
+  - type: cloudflare_zt
+    config: {}
+
+  # Endpoint
+  - type: crowdstrike
+    config: {}
+
+  # Session
+  - type: redis
+    config: {}
+
+  # Service Mesh
+  - type: istio
+    config: {}

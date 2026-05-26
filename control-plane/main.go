@@ -14,7 +14,7 @@ import (
 
 type RevocationProvider interface {
 	Name() string
-	Category() string   // IAM, CIAM, PAM, NHI, etc.
+	Category() string
 	Revoke(blastRadius string) error
 }
 
@@ -48,50 +48,42 @@ type Fabric struct {
 	mu        sync.Mutex
 }
 
+var validBlastRadius = map[string]bool{
+	"user": true, "tenant": true, "app": true, "region": true, "global": true,
+}
+
 func NewFabric(configPath string) (*Fabric, error) {
 	data, err := os.ReadFile(configPath)
 	if err != nil {
-		return nil, fmt.Errorf("read config: %w", err)
+		return nil, fmt.Errorf("read config %q: %w", configPath, err)
 	}
 	var cfg Config
 	if err := yaml.Unmarshal(data, &cfg); err != nil {
 		return nil, fmt.Errorf("parse config: %w", err)
 	}
 
-	// Universal provider registry – add any system here
 	registry := map[string]func(map[string]interface{}) (RevocationProvider, error){
-		// Workforce IAM
 		"okta":            NewOktaProvider,
 		"azure_ad":        NewAzureADProvider,
 		"ping":            NewPingProvider,
 		"onelogin":        NewOneLoginProvider,
-		// CIAM
 		"auth0":           NewAuth0Provider,
 		"cognito":         NewCognitoProvider,
-		// PAM
 		"cyberark":        NewCyberArkProvider,
 		"delinea":         NewDelineaProvider,
 		"beyondtrust":     NewBeyondTrustProvider,
-		// PIM
 		"azure_pim":       NewAzurePIMProvider,
-		// NHI / Secrets
 		"vault":           NewVaultProvider,
 		"aws_secrets":     NewAWSSecretsProvider,
 		"akeyless":        NewAkeylessProvider,
-		// API Gateways
 		"kong":            NewKongProvider,
 		"aws_api_gw":      NewAWSAPIGatewayProvider,
-		// Cloud IAM
 		"aws_iam":         NewAWSIAMProvider,
 		"gcp_iam":         NewGCPIAMProvider,
-		// Zero Trust / ZTNA
 		"zscaler":         NewZscalerProvider,
 		"cloudflare_zt":   NewCloudflareZTProvider,
-		// Endpoint / EDR
 		"crowdstrike":     NewCrowdStrikeProvider,
-		// Session / Redis
 		"redis":           NewRedisSessionProvider,
-		// Service Mesh
 		"istio":           NewIstioProvider,
 	}
 
@@ -114,7 +106,11 @@ func NewFabric(configPath string) (*Fabric, error) {
 	return &Fabric{providers: providers}, nil
 }
 
-func (f *Fabric) TriggerKillSwitch(blastRadius, reason, initiatedBy string) {
+func (f *Fabric) TriggerKillSwitch(blastRadius, reason, initiatedBy string) error {
+	if !validBlastRadius[blastRadius] {
+		return fmt.Errorf("invalid blast radius: %q (must be user|tenant|app|region|global)", blastRadius)
+	}
+
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
@@ -152,9 +148,14 @@ func (f *Fabric) TriggerKillSwitch(blastRadius, reason, initiatedBy string) {
 	event.Status = "completed"
 	f.events = append(f.events, event)
 
-	data, _ := json.MarshalIndent(event, "", "  ")
-	fmt.Println("\n" + string(data) + "\n")
+	data, err := json.MarshalIndent(event, "", "  ")
+	if err != nil {
+		log.Printf("ERROR marshaling event: %v", err)
+	} else {
+		fmt.Println("\n" + string(data) + "\n")
+	}
 	log.Printf("✓ Kill switch complete: %s\n", event.ID)
+	return nil
 }
 
 func (f *Fabric) ListEvents() {
@@ -164,8 +165,12 @@ func (f *Fabric) ListEvents() {
 		fmt.Println("No events")
 		return
 	}
-	data, _ := json.MarshalIndent(f.events, "", "  ")
-	fmt.Println("\n" + string(data) + "\n")
+	data, err := json.MarshalIndent(f.events, "", "  ")
+	if err != nil {
+		log.Printf("ERROR marshaling events: %v", err)
+	} else {
+		fmt.Println("\n" + string(data) + "\n")
+	}
 }
 
 func main() {
@@ -187,5 +192,7 @@ func main() {
 	}
 
 	log.Println("Identity-UTH Universal Kill Switch")
-	fabric.TriggerKillSwitch(*blastRadius, *reason, *initiatedBy)
+	if err := fabric.TriggerKillSwitch(*blastRadius, *reason, *initiatedBy); err != nil {
+		log.Fatalf("Kill switch failed: %v", err)
+	}
 }
