@@ -2,10 +2,10 @@
 # Identity-UTH: Universal Trust Hypervisor
 ## Global Access Kill Switch Orchestrator
 
-**One trigger. Every identity silo. Instant revocation.**
+**Enterprise-grade emergency access revocation system spanning Workforce IAM, CIAM, PAM, Non-Human Identity, APIs, cloud, and SaaS ecosystems.**
 
 [![GitHub Release](https://img.shields.io/github/v/release/ehsidawi/Identity-UTH)](https://github.com/ehsidawi/Identity-UTH/releases)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![GitHub License](https://img.shields.io/github/license/ehsidawi/Identity-UTH)](LICENSE)
 [![Go Version](https://img.shields.io/badge/go-1.21+-blue)](https://golang.org)
 
 ---
@@ -19,180 +19,372 @@ go build -o fabric-control-plane .
 ./fabric-control-plane --blast-radius global
 ```
 
-The binary **finds `config.yaml` automatically** and executes a kill switch across **all configured identity providers** in parallel.
+The binary **automatically finds `config.yaml`** (located in the repo root) and executes a kill switch across **all enabled identity providers** in parallel. No extra configuration or flags required.
 
-### Example Output (simplified)
+### Example Output (with 22+ providers)
 ```json
 {
-  "id": "kill-switch-...",
+  "id": "kill-switch-1779828317127811000",
+  "timestamp": "2026-05-26T23:45:17.127813+03:00",
   "blast_radius": "global",
+  "reason": "Emergency lockdown",
+  "initiated_by": "admin@company.com",
   "status": "completed",
   "results": [
     { "provider": "Okta", "category": "Workforce IAM", "status": "completed" },
+    { "provider": "Azure AD", "category": "Workforce IAM", "status": "completed" },
+    { "provider": "Ping Identity", "category": "Workforce IAM", "status": "completed" },
+    { "provider": "OneLogin", "category": "Workforce IAM", "status": "completed" },
+    { "provider": "Auth0", "category": "CIAM", "status": "completed" },
+    { "provider": "AWS Cognito", "category": "CIAM", "status": "completed" },
     { "provider": "CyberArk", "category": "PAM", "status": "completed" },
-    { "provider": "AWS IAM", "category": "Cloud IAM", "status": "completed" }
+    { "provider": "Delinea", "category": "PAM", "status": "completed" },
+    { "provider": "BeyondTrust", "category": "PAM", "status": "completed" },
+    { "provider": "Azure AD PIM", "category": "PIM", "status": "completed" },
+    { "provider": "HashiCorp Vault", "category": "NHI / Secrets", "status": "completed" },
+    { "provider": "AWS Secrets Manager", "category": "NHI / Secrets", "status": "completed" },
+    { "provider": "Akeyless", "category": "NHI / Secrets", "status": "completed" },
+    { "provider": "Kong", "category": "API Gateway", "status": "completed" },
+    { "provider": "AWS API Gateway", "category": "API Gateway", "status": "completed" },
+    { "provider": "AWS IAM", "category": "Cloud IAM", "status": "completed" },
+    { "provider": "GCP IAM", "category": "Cloud IAM", "status": "completed" },
+    { "provider": "Zscaler", "category": "Zero Trust", "status": "completed" },
+    { "provider": "Cloudflare Zero Trust", "category": "Zero Trust", "status": "completed" },
+    { "provider": "CrowdStrike", "category": "Endpoint", "status": "completed" },
+    { "provider": "Redis Sessions", "category": "Session Store", "status": "completed" },
+    { "provider": "Istio", "category": "Service Mesh", "status": "completed" }
   ]
 }
 ```
 
 ---
 
-## 🎯 Coverage – 13 Identity Categories, 22+ Providers
+## 📋 Features
 
-| Category | Providers |
-|----------|-----------|
-| **Workforce IAM** | Okta, Azure AD, Ping Identity, OneLogin |
-| **CIAM** | Auth0, AWS Cognito |
-| **PAM** | CyberArk, Delinea, BeyondTrust |
-| **PIM** | Azure AD PIM |
-| **NHI / Secrets** | HashiCorp Vault, AWS Secrets Manager, Akeyless |
-| **API Gateways** | Kong, AWS API Gateway |
-| **Cloud IAM** | AWS IAM, GCP IAM |
-| **Zero Trust** | Zscaler, Cloudflare Zero Trust |
-| **Endpoint** | CrowdStrike |
-| **Session Store** | Redis |
-| **Service Mesh** | Istio |
-
-All providers are **pluggable** via a simple Go interface.  
-To add a new provider (any vendor), implement two functions and register it in the registry.
+✅ **Standalone Binary** - No external dependencies, no hosting required  
+✅ **Cross-platform** - macOS, Linux, Windows (Go cross‑compile)  
+✅ **Sub-60s Execution** - Parallel revocation across all configured providers  
+✅ **JSON Output** - Machine-readable event format  
+✅ **Blast Radius Modes** - user, tenant, app, region, global  
+✅ **Immutable Audit Trail** - Complete event history stored in‑memory  
+✅ **Pluggable Provider Architecture** - Add any identity system in minutes  
+✅ **Auto‑Discovery of config.yaml** - Zero‑config execution from the binary directory  
 
 ---
 
-## 📋 How It Works
+## 🎯 Use Cases
 
-1. **Configuration** – `config.yaml` (in repo root) lists which providers to activate.  
-2. **Parallel Revocation** – Each provider is called concurrently.  
-3. **Audit Trail** – Every execution produces a machine‑readable JSON event.  
-4. **Auto‑Discovery** – The binary finds `config.yaml` automatically (relative to its own location).
+### Emergency Scenarios
+- **Enterprise-wide breach**: `--blast-radius global`
+- **Tenant compromised**: `--blast-radius tenant`
+- **Application vulnerability**: `--blast-radius app`
+- **Regional DDoS/outage**: `--blast-radius region`
+- **Individual account compromise**: `--blast-radius user`
 
-### Blast Radius Modes
-- `global` – All users, all apps, all regions
-- `region` – All workloads in a specific region
-- `app` – Single application
-- `tenant` – Single tenant (multi‑tenant systems)
-- `user` – Individual user account
+### Access Revocation
+- OAuth/OIDC tokens
+- Session cookies
+- API keys & service accounts
+- Privileged access sessions (PAM)
+- Workload identities (NHI)
+- Cloud IAM permissions (AWS, GCP)
+- Zero Trust network access
+- Endpoint isolation
+- Service mesh authorization
 
 ---
 
-## 🔧 Configuration (`config.yaml`)
+## 🔧 Installation
 
-A fully populated example (included in the repo root) enables all providers.  
-To disable a provider, simply remove its entry.  
-For production, replace placeholder config values with real credentials (or use environment variables).
+### Method 1: Build from Source (Recommended)
+```bash
+git clone https://github.com/ehsidawi/Identity-UTH.git
+cd Identity-UTH/control-plane
+go build -o fabric-control-plane .
+./fabric-control-plane --blast-radius global
+```
 
-```yaml
-providers:
-  - type: okta
-    config:
-      org_url: "${OKTA_ORG_URL}"
-      api_token: "${OKTA_API_TOKEN}"
-  - type: azure_ad
-    config:
-      tenant_id: "${AZURE_TENANT_ID}"
-      client_id: "${AZURE_CLIENT_ID}"
-      client_secret: "${AZURE_CLIENT_SECRET}"
-  # … enable/disable any of the 22+ providers
+### Method 2: Docker
+```bash
+docker build -t identity-uth:latest .
+docker run -it identity-uth:latest --blast-radius global
+```
+
+### Method 3: Pre-built Binaries (from GitHub Releases)
+```bash
+# macOS (ARM64)
+curl -L https://github.com/ehsidawi/Identity-UTH/releases/download/v1.0.0/fabric-control-plane-macos -o fabric && chmod +x fabric
+./fabric --blast-radius global
+```
+*Note: pre‑built binaries are available in the v1.0.0 release; they match the standalone version.*
+
+---
+
+## 📖 Usage
+
+### Basic Kill Switch
+```bash
+./fabric-control-plane --blast-radius global \
+  --reason "Suspected enterprise breach" \
+  --initiated-by "ciso@company.com"
+```
+
+### Single Tenant Isolation
+```bash
+./fabric-control-plane --blast-radius tenant \
+  --reason "Unusual activity in acme-corp tenant" \
+  --initiated-by "security-lead@company.com"
+```
+
+### Regional Quarantine
+```bash
+./fabric-control-plane --blast-radius region \
+  --reason "DDoS attack detected in us-west-2" \
+  --initiated-by "incident-commander@company.com"
+```
+
+### Single User Account
+```bash
+./fabric-control-plane --blast-radius user \
+  --reason "User account compromised" \
+  --initiated-by "security@company.com"
+```
+
+### View All Events
+```bash
+./fabric-control-plane --list
+```
+
+### Command-line Help
+```bash
+./fabric-control-plane --help
 ```
 
 ---
 
-## 🧩 Adding a New Provider (Any Company)
+## 🏗️ Architecture
 
-1. Create a struct implementing the `RevocationProvider` interface:
-   ```go
-   type MyProvider struct{}
-   func (p *MyProvider) Name() string { return "My Vendor" }
-   func (p *MyProvider) Category() string { return "IAM" }
-   func (p *MyProvider) Revoke(blastRadius string) error {
-       // Real API call here
-       return nil
-   }
-   ```
-2. Add a constructor `NewMyProvider(cfg map[string]interface{}) (RevocationProvider, error)`.
-3. Register it in the `registry` map inside `NewFabric()`.
-4. Add its entry to `config.yaml`.
+### Control Plane (Go Binary)
+- **Standalone executable** – No Kafka, Redis, or external services needed for basic operation
+- **In‑memory event store** – Thread‑safe audit trail
+- **CLI interface** – Simple flag‑based commands
+- **JSON serialization** – Machine & human‑readable output
+- **Smart config discovery** – Automatically locates `config.yaml` relative to the binary (works from any working directory)
+
+### Provider Plugin System
+The binary uses a `RevocationProvider` interface. Every identity system is a plugin:
+```go
+type RevocationProvider interface {
+    Name() string
+    Category() string
+    Revoke(blastRadius string) error
+}
+```
+A central registry (`main.go`) maps provider names to their constructors. Providers are executed **concurrently** using goroutines and a `sync.WaitGroup`. Failed providers do not block others – full parallelism is guaranteed.
+
+### Optional: Kubernetes Deployment
+```bash
+kubectl apply -f k8s/fabric-deployment.yaml
+```
+- 3‑replica StatefulSet
+- RBAC & NetworkPolicy enforcement
+- Pod Disruption Budget for HA
+- Integrated with service mesh (Istio)
+
+### Optional: AWS Infrastructure
+```bash
+terraform apply -f terraform/main.tf
+```
+- EKS cluster with CloudHSM
+- Managed Kafka (MSK) for event streaming
+- S3 WORM bucket for immutable audit logs
+- KMS encryption for secrets
 
 ---
 
 ## 📁 Project Structure
+
 ```
 Identity-UTH/
-├── README.md                   ← you are here
-├── QUICKSTART.md               ← 2‑minute setup guide
-├── INSTALL.md                  ← installation methods
-├── LICENSE                     ← MIT
-├── config.yaml                 ← provider configuration (auto‑discovered)
-├── control-plane/              ← Go binary source
-│   ├── main.go                 ← orchestration logic
-│   ├── providers.go            ← all provider stubs (22+)
-│   ├── go.mod / go.sum
-│   └── fabric-control-plane*   ← compiled binary (not in Git)
-├── k8s/                        ← Kubernetes deployment
-├── policies/                   ← OPA policies
-├── orchestration/              ← SOAR workflow definition
-├── terraform/                  ← AWS infrastructure (optional)
-├── .github/workflows/          ← CI/CD pipeline
-└── Dockerfile                  ← container image
+├── README.md                          # This file
+├── QUICKSTART.md                      # 2-minute setup guide
+├── INSTALL.md                         # Installation methods
+├── LICENSE                            # MIT license
+├── config.yaml                        # Provider configuration (auto‑discovered)
+├── .gitignore                         # Git ignore rules
+├── control-plane/
+│   ├── main.go                        # Orchestration logic + provider registry
+│   ├── providers.go                   # Provider stub implementations (22+)
+│   ├── main_test.go                   # Unit tests
+│   ├── go.mod                         # Go dependencies
+│   └── go.sum                         # Dependency checksums
+├── k8s/
+│   └── fabric-deployment.yaml         # Kubernetes StatefulSet
+├── policies/
+│   └── kill-switch.rego               # OPA access control
+├── orchestration/
+│   └── kill-switch-workflow.yaml      # SOAR workflow
+├── terraform/
+│   └── main.tf                        # AWS infrastructure
+├── .github/
+│   └── workflows/ci-cd.yaml           # GitHub Actions CI/CD
+└── Dockerfile                         # Container image
+```
+
+---
+
+## 🔐 Security Model
+
+### Multi-Layer Defense
+1. **Hardware Security** – CloudHSM support for production (optional)
+2. **Policy Enforcement** – OPA with hardware‑backed signatures (optional)
+3. **Audit Trail** – Immutable WORM S3 storage (optional)
+4. **Multi‑Party Approval** – Framework for 3+ signers (production)
+5. **Staged Recovery** – Checkpoints before/after revocation
+
+### What Gets Revoked Per Blast Radius
+
+| Target | Actions Revoked |
+|--------|-----------------|
+| **global** | All tokens, sessions, API keys, workloads (all regions) |
+| **region** | All resources in specified AWS/Azure/GCP region |
+| **app** | Tokens, API keys, workload identities for application |
+| **tenant** | All users, sessions, API keys in tenant |
+| **user** | Single user tokens, sessions, MFA devices |
+
+---
+
+## 🧪 Testing
+
+### Quick Test
+```bash
+./fabric-control-plane --blast-radius global --reason "Test" --initiated-by "test@company.com"
+```
+
+### Unit Tests
+```bash
+cd control-plane
+go test -v ./...
+```
+
+### Integration with Kubernetes
+```bash
+kubectl apply -f k8s/fabric-deployment.yaml
+kubectl get pods -n identity-security-fabric
+kubectl logs -f deployment/control-plane -n identity-security-fabric
+```
+
+### Terraform Validation
+```bash
+cd terraform
+terraform init -backend=false
+terraform validate
+terraform plan
+```
+
+---
+
+## 📊 Event Output Format
+
+```json
+{
+  "id": "kill-switch-1779828317127811000",
+  "timestamp": "2026-05-26T23:45:17.127813+03:00",
+  "blast_radius": "global|region|app|tenant|user",
+  "reason": "Human-readable reason",
+  "initiated_by": "email@company.com",
+  "status": "completed",
+  "results": [
+    {
+      "provider": "Okta",
+      "category": "Workforce IAM",
+      "status": "completed"
+    }
+  ]
+}
 ```
 
 ---
 
 ## 🚢 Deployment Options
 
-### Standalone CLI (instant – recommended for testing)
+### Option 1: Standalone CLI (Development/Testing)
+**Best for:** Proof of concept, testing, incident response
 ```bash
-./fabric-control-plane --blast-radius global
+./fabric-control-plane --blast-radius global --reason "Emergency"
 ```
-- No external dependencies
-- Runs on macOS, Linux, Windows (Go cross‑compile)
+- **Pros:** No setup, runs anywhere, instant
+- **Cons:** Single instance, no HA
 
-### Docker
-```bash
-docker build -t identity-uth .
-docker run -it identity-uth
-```
-
-### Kubernetes (production)
+### Option 2: Kubernetes (Production)
+**Best for:** Enterprise, high availability, auto-scaling
 ```bash
 kubectl apply -f k8s/fabric-deployment.yaml
 ```
+- **Pros:** HA, auto-scaling, self-healing, integrated monitoring
+- **Cons:** Requires Kubernetes cluster
 
-### AWS Infrastructure (enterprise)
+### Option 3: AWS Infrastructure (Enterprise)
+**Best for:** Large-scale, multi-region, compliance
 ```bash
-cd terraform
-terraform init && terraform apply
+terraform apply -f terraform/main.tf
 ```
+- **Pros:** Managed services, WORM audit logs, HSM, compliance-ready
+- **Cons:** AWS account, cost, complexity
 
 ---
 
-## 🧪 Testing
+## 🔄 Integration Examples
 
+### Slack Alert
 ```bash
-cd control-plane
-go test -v ./...
+./fabric-control-plane --blast-radius global --reason "Breach" --initiated-by "security@company.com" | \
+  curl -X POST https://hooks.slack.com/services/YOUR/WEBHOOK -d @-
+```
+
+### PagerDuty Escalation
+```bash
+EVENT=$(./fabric-control-plane --blast-radius global --reason "Emergency")
+curl -X POST https://events.pagerduty.com/v2/enqueue \
+  -H "Content-Type: application/json" \
+  -d "{\"routing_key\": \"YOUR_KEY\", \"dedup_key\": \"$(echo $EVENT | jq -r .id)\"}"
+```
+
+### Splunk Logging
+```bash
+./fabric-control-plane --blast-radius global --reason "Incident" | \
+  curl -X POST https://your-splunk.com/services/collector \
+    -H "Authorization: Splunk YOUR_TOKEN" \
+    -d @-
 ```
 
 ---
 
 ## 📖 Documentation
 
-- **[QUICKSTART.md](QUICKSTART.md)** – 2‑minute setup
-- **[INSTALL.md](INSTALL.md)** – All installation methods
-- **[LICENSE](LICENSE)** – MIT open source
+- **[QUICKSTART.md](QUICKSTART.md)** - 2-minute setup
+- **[INSTALL.md](INSTALL.md)** - Installation methods
+- **[LICENSE](LICENSE)** - MIT license
 
 ---
 
-## 🛠️ Requirements
+## 🤝 Support
 
-- **Go 1.21+** (to build from source)
-- No other dependencies – the binary is self‑contained
+- **Issues**: https://github.com/ehsidawi/Identity-UTH/issues
+- **Releases**: https://github.com/ehsidawi/Identity-UTH/releases
+- **Source**: https://github.com/ehsidawi/Identity-UTH
 
 ---
 
-## 🤝 Contributing
+## 📊 Version History
 
-Contributions welcome!  
-Open an issue or pull request at https://github.com/ehsidawi/Identity-UTH.
+### v1.0.0 (Current)
+- ✅ Universal provider architecture (22+ providers across 13 categories)
+- ✅ Standalone kill switch binary with auto‑config discovery
+- ✅ 5 blast radius modes
+- ✅ JSON audit trail
+- ✅ Plug‑and‑play provider registration
+- ✅ CI/CD pipeline + unit tests
 
 ---
 
@@ -202,5 +394,7 @@ MIT – see [LICENSE](LICENSE) for details.
 
 ---
 
-**Built for enterprise security teams who need to stop everything, everywhere, right now.**
+**Built with ❤️ for enterprise security teams**
+
+*Last updated: May 27, 2026*
 ```
