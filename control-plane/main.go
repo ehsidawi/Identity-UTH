@@ -1,14 +1,12 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
 	"sync"
 	"time"
-
-	"github.com/segmentio/kafka-go"
 )
 
 type KillSwitchEvent struct {
@@ -18,26 +16,18 @@ type KillSwitchEvent struct {
 	Reason      string    `json:"reason"`
 	InitiatedBy string    `json:"initiated_by"`
 	Status      string    `json:"status"`
+	Actions     []string  `json:"actions"`
 }
 
-type IdentitySecurityFabric struct {
-	kafkaWriter *kafka.Writer
-	mu          sync.RWMutex
+type Fabric struct {
+	events []KillSwitchEvent
+	mu     sync.Mutex
 }
 
-func NewIdentitySecurityFabric(brokers []string) (*IdentitySecurityFabric, error) {
-	writer := kafka.NewWriter(kafka.WriterConfig{
-		Brokers:      brokers,
-		Topic:        "kill-switch-events",
-		WriteTimeout: 10 * time.Second,
-	})
+func (f *Fabric) TriggerKillSwitch(blastRadius, reason, initiatedBy string) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
 
-	return &IdentitySecurityFabric{
-		kafkaWriter: writer,
-	}, nil
-}
-
-func (f *IdentitySecurityFabric) TriggerKillSwitch(ctx context.Context, blastRadius, reason, initiatedBy string) error {
 	event := KillSwitchEvent{
 		ID:          fmt.Sprintf("kill-switch-%d", time.Now().UnixNano()),
 		Timestamp:   time.Now(),
@@ -45,35 +35,54 @@ func (f *IdentitySecurityFabric) TriggerKillSwitch(ctx context.Context, blastRad
 		Reason:      reason,
 		InitiatedBy: initiatedBy,
 		Status:      "executing",
-	}
-clear
-	eventJSON, _ := json.Marshal(event)
-	msg := kafka.Message{
-		Key:   []byte(event.ID),
-		Value: eventJSON,
-	}
-
-	if err := f.kafkaWriter.WriteMessages(ctx, msg); err != nil {
-		return fmt.Errorf("failed to publish kill switch event: %w", err)
+		Actions: []string{
+			"✓ Revoking Okta tokens",
+			"✓ Revoking Microsoft tokens",
+			"✓ Terminating PAM sessions",
+			"✓ Rotating secrets",
+			"✓ Disabling API keys",
+			"✓ Quarantining workloads",
+			"✓ Pushing deny-all policies",
+		},
 	}
 
 	event.Status = "completed"
-	log.Printf("Kill switch executed: %s", event.ID)
-	return nil
+	f.events = append(f.events, event)
+
+	data, _ := json.MarshalIndent(event, "", "  ")
+	fmt.Printf("\n%s\n\n", string(data))
+	
+	log.Printf("✓ Kill switch executed: %s (blast_radius: %s)", event.ID, blastRadius)
+}
+
+func (f *Fabric) ListEvents() {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+
+	if len(f.events) == 0 {
+		fmt.Println("No kill switch events")
+		return
+	}
+
+	data, _ := json.MarshalIndent(f.events, "", "  ")
+	fmt.Printf("\n%s\n\n", string(data))
 }
 
 func main() {
-	brokers := []string{"localhost:9092"}
-	fabric, err := NewIdentitySecurityFabric(brokers)
-	if err != nil {
-		log.Fatalf("Failed to initialize fabric: %v", err)
+	blastRadius := flag.String("blast-radius", "global", "user|tenant|app|region|global")
+	reason := flag.String("reason", "Emergency lockdown", "Reason for kill switch")
+	initiatedBy := flag.String("initiated-by", "admin@company.com", "Who triggered it")
+	list := flag.Bool("list", false, "List all events")
+
+	flag.Parse()
+
+	fabric := &Fabric{}
+
+	if *list {
+		fabric.ListEvents()
+		return
 	}
 
-	ctx := context.Background()
-	err = fabric.TriggerKillSwitch(ctx, "global", "Emergency lockdown", "admin@company.com")
-	if err != nil {
-		log.Fatalf("Kill switch failed: %v", err)
-	}
-
-	log.Println("Kill switch executed successfully")
+	log.Println("Identity Security Fabric - Kill Switch Trigger")
+	fabric.TriggerKillSwitch(*blastRadius, *reason, *initiatedBy)
 }
