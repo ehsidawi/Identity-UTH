@@ -1,4 +1,5 @@
-```markdown
+```bash
+cd ~/Downloads/Identity-UTH && cat > README.md << 'ENDOFFILE'
 # Identity-UTH: Universal Trust Hypervisor
 ## Global Access Kill Switch Orchestrator
 
@@ -7,6 +8,78 @@
 [![GitHub Release](https://img.shields.io/github/v/release/ehsidawi/Identity-UTH)](https://github.com/ehsidawi/Identity-UTH/releases)
 [![GitHub License](https://img.shields.io/github/license/ehsidawi/Identity-UTH)](LICENSE)
 [![Go Version](https://img.shields.io/badge/go-1.21+-blue)](https://golang.org)
+
+---
+
+## What Is This?
+
+A **single command** instantly revokes access across **every identity system** in your enterprise — Okta, Azure AD, CyberArk, HashiCorp Vault, AWS IAM, CrowdStrike, and more — all at once.  
+You define which providers you use in a simple `config.yaml` file. When an incident hits, one person runs the binary and within seconds every enabled provider is called **in parallel**, with a full audit trail.
+
+No external services, no cloud dependency — just a single Go binary you can run anywhere.
+
+---
+
+## Why You Need This
+
+In a modern enterprise, "who has access" is scattered across 15–30 different platforms. When a breach happens, you have minutes – not hours – to shut everything down. Manually logging into each admin console is slow, error‑prone, and impossible under pressure.
+
+Identity-UTH is your **universal panic button** – one trigger, every silo, instant lockdown.
+
+---
+
+## 🎯 Coverage – 13 Identity Categories, 22+ Providers
+
+| Category | Providers |
+|----------|-----------|
+| **Workforce IAM** | Okta, Azure AD, Ping Identity, OneLogin |
+| **CIAM** | Auth0, AWS Cognito |
+| **PAM** | CyberArk, Delinea, BeyondTrust |
+| **PIM** | Azure AD PIM |
+| **NHI / Secrets** | HashiCorp Vault, AWS Secrets Manager, Akeyless |
+| **API Gateways** | Kong, AWS API Gateway |
+| **Cloud IAM** | AWS IAM, GCP IAM |
+| **Zero Trust** | Zscaler, Cloudflare Zero Trust |
+| **Endpoint** | CrowdStrike |
+| **Session Store** | Redis |
+| **Service Mesh** | Istio |
+
+All providers are **pluggable** – implement a simple interface, register it, and it’s part of the kill switch.
+
+---
+
+## 📋 Features
+
+✅ **Standalone Binary** - No external dependencies, no hosting required  
+✅ **Cross-platform** - macOS, Linux, Windows (Go cross‑compile)  
+✅ **Sub-60s Execution** - Parallel revocation across all providers  
+✅ **JSON Output** - Machine-readable event format  
+✅ **Blast Radius Modes** - user, tenant, app, region, global  
+✅ **Immutable Audit Trail** - Complete event history stored in‑memory  
+✅ **Pluggable Provider Architecture** - Add any identity system in minutes  
+✅ **Auto‑Discovery of config.yaml** - Zero‑config execution from the binary directory  
+
+---
+
+## 🎯 Use Cases
+
+### Emergency Scenarios
+- **Enterprise-wide breach**: `--blast-radius global`
+- **Tenant compromised**: `--blast-radius tenant`
+- **Application vulnerability**: `--blast-radius app`
+- **Regional DDoS/outage**: `--blast-radius region`
+- **Individual account compromise**: `--blast-radius user`
+
+### Access Revocation
+- OAuth/OIDC tokens
+- Session cookies
+- API keys & service accounts
+- Privileged access sessions (PAM)
+- Workload identities (NHI)
+- Cloud IAM permissions
+- Zero Trust network access
+- Endpoint isolation
+- Service mesh authorization
 
 ---
 
@@ -19,9 +92,9 @@ go build -o fabric-control-plane .
 ./fabric-control-plane --blast-radius global
 ```
 
-The binary **automatically finds `config.yaml`** (located in the repo root) and executes a kill switch across **all enabled identity providers** in parallel. No extra configuration or flags required.
+The binary **automatically finds `config.yaml`** (in the repo root) and revokes access across **all configured identity providers** in parallel – no extra flags needed.
 
-### Example Output (with 22+ providers)
+### Example Output (22+ providers)
 ```json
 {
   "id": "kill-switch-1779828317127811000",
@@ -59,41 +132,6 @@ The binary **automatically finds `config.yaml`** (located in the repo root) and 
 
 ---
 
-## 📋 Features
-
-✅ **Standalone Binary** - No external dependencies, no hosting required  
-✅ **Cross-platform** - macOS, Linux, Windows (Go cross‑compile)  
-✅ **Sub-60s Execution** - Parallel revocation across all configured providers  
-✅ **JSON Output** - Machine-readable event format  
-✅ **Blast Radius Modes** - user, tenant, app, region, global  
-✅ **Immutable Audit Trail** - Complete event history stored in‑memory  
-✅ **Pluggable Provider Architecture** - Add any identity system in minutes  
-✅ **Auto‑Discovery of config.yaml** - Zero‑config execution from the binary directory  
-
----
-
-## 🎯 Use Cases
-
-### Emergency Scenarios
-- **Enterprise-wide breach**: `--blast-radius global`
-- **Tenant compromised**: `--blast-radius tenant`
-- **Application vulnerability**: `--blast-radius app`
-- **Regional DDoS/outage**: `--blast-radius region`
-- **Individual account compromise**: `--blast-radius user`
-
-### Access Revocation
-- OAuth/OIDC tokens
-- Session cookies
-- API keys & service accounts
-- Privileged access sessions (PAM)
-- Workload identities (NHI)
-- Cloud IAM permissions (AWS, GCP)
-- Zero Trust network access
-- Endpoint isolation
-- Service mesh authorization
-
----
-
 ## 🔧 Installation
 
 ### Method 1: Build from Source (Recommended)
@@ -104,19 +142,18 @@ go build -o fabric-control-plane .
 ./fabric-control-plane --blast-radius global
 ```
 
-### Method 2: Docker
-```bash
-docker build -t identity-uth:latest .
-docker run -it identity-uth:latest --blast-radius global
-```
-
-### Method 3: Pre-built Binaries (from GitHub Releases)
+### Method 2: Pre-built Binaries (from GitHub Releases)
 ```bash
 # macOS (ARM64)
 curl -L https://github.com/ehsidawi/Identity-UTH/releases/download/v1.0.0/fabric-control-plane-macos -o fabric && chmod +x fabric
 ./fabric --blast-radius global
 ```
-*Note: pre‑built binaries are available in the v1.0.0 release; they match the standalone version.*
+
+### Method 3: Docker
+```bash
+docker build -t identity-uth:latest .
+docker run -it identity-uth:latest --blast-radius global
+```
 
 ---
 
@@ -165,14 +202,14 @@ curl -L https://github.com/ehsidawi/Identity-UTH/releases/download/v1.0.0/fabric
 ## 🏗️ Architecture
 
 ### Control Plane (Go Binary)
-- **Standalone executable** – No Kafka, Redis, or external services needed for basic operation
+- **Standalone executable** – No Kafka, Redis, or external services needed
 - **In‑memory event store** – Thread‑safe audit trail
 - **CLI interface** – Simple flag‑based commands
 - **JSON serialization** – Machine & human‑readable output
 - **Smart config discovery** – Automatically locates `config.yaml` relative to the binary (works from any working directory)
 
-### Provider Plugin System
-The binary uses a `RevocationProvider` interface. Every identity system is a plugin:
+### Universal Provider Plugin System
+Every identity system implements this interface:
 ```go
 type RevocationProvider interface {
     Name() string
@@ -180,13 +217,13 @@ type RevocationProvider interface {
     Revoke(blastRadius string) error
 }
 ```
-A central registry (`main.go`) maps provider names to their constructors. Providers are executed **concurrently** using goroutines and a `sync.WaitGroup`. Failed providers do not block others – full parallelism is guaranteed.
+A central registry in `main.go` maps provider names to constructors. Providers execute **concurrently** using goroutines and a `sync.WaitGroup`. Failures don’t block others.
 
 ### Optional: Kubernetes Deployment
 ```bash
 kubectl apply -f k8s/fabric-deployment.yaml
 ```
-- 3‑replica StatefulSet
+- 3-replica StatefulSet
 - RBAC & NetworkPolicy enforcement
 - Pod Disruption Budget for HA
 - Integrated with service mesh (Istio)
@@ -203,7 +240,6 @@ terraform apply -f terraform/main.tf
 ---
 
 ## 📁 Project Structure
-
 ```
 Identity-UTH/
 ├── README.md                          # This file
@@ -213,11 +249,10 @@ Identity-UTH/
 ├── config.yaml                        # Provider configuration (auto‑discovered)
 ├── .gitignore                         # Git ignore rules
 ├── control-plane/
-│   ├── main.go                        # Orchestration logic + provider registry
-│   ├── providers.go                   # Provider stub implementations (22+)
+│   ├── main.go                        # Kill switch logic + provider registry
+│   ├── providers.go                   # Provider stubs (22+)
 │   ├── main_test.go                   # Unit tests
-│   ├── go.mod                         # Go dependencies
-│   └── go.sum                         # Dependency checksums
+│   ├── go.mod / go.sum
 ├── k8s/
 │   └── fabric-deployment.yaml         # Kubernetes StatefulSet
 ├── policies/
@@ -236,10 +271,10 @@ Identity-UTH/
 ## 🔐 Security Model
 
 ### Multi-Layer Defense
-1. **Hardware Security** – CloudHSM support for production (optional)
-2. **Policy Enforcement** – OPA with hardware‑backed signatures (optional)
+1. **Hardware Security** – CloudHSM support (optional)
+2. **Policy Enforcement** – OPA with hardware-backed signatures
 3. **Audit Trail** – Immutable WORM S3 storage (optional)
-4. **Multi‑Party Approval** – Framework for 3+ signers (production)
+4. **Multi-Party Approval** – Framework for 3+ signers
 5. **Staged Recovery** – Checkpoints before/after revocation
 
 ### What Gets Revoked Per Blast Radius
@@ -380,11 +415,12 @@ curl -X POST https://events.pagerduty.com/v2/enqueue \
 
 ### v1.0.0 (Current)
 - ✅ Universal provider architecture (22+ providers across 13 categories)
-- ✅ Standalone kill switch binary with auto‑config discovery
+- ✅ Standalone kill switch binary with smart config auto‑discovery
 - ✅ 5 blast radius modes
-- ✅ JSON audit trail
-- ✅ Plug‑and‑play provider registration
-- ✅ CI/CD pipeline + unit tests
+- ✅ JSON audit trail with per‑provider results
+- ✅ Pluggable provider registration system
+- ✅ CI/CD pipeline and unit tests
+- ✅ Complete documentation
 
 ---
 
@@ -397,4 +433,6 @@ MIT – see [LICENSE](LICENSE) for details.
 **Built with ❤️ for enterprise security teams**
 
 *Last updated: May 27, 2026*
+ENDOFFILE
+git add README.md && git commit -m "Update README: explanatory content first, Quick Start later" && git push
 ```
