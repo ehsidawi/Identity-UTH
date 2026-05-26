@@ -1,12 +1,9 @@
-```bash
-cd ~/Downloads/Identity-UTH && cat > README.md << 'ENDOFFILE'
 # Identity-UTH: Universal Trust Hypervisor
 ## Global Access Kill Switch Orchestrator
 
 **Enterprise-grade emergency access revocation system spanning Workforce IAM, CIAM, PAM, Non-Human Identity, APIs, cloud, and SaaS ecosystems.**
 
 [![GitHub Release](https://img.shields.io/github/v/release/ehsidawi/Identity-UTH)](https://github.com/ehsidawi/Identity-UTH/releases)
-[![GitHub License](https://img.shields.io/github/license/ehsidawi/Identity-UTH)](LICENSE)
 [![Go Version](https://img.shields.io/badge/go-1.21+-blue)](https://golang.org)
 
 ---
@@ -433,6 +430,4 @@ MIT – see [LICENSE](LICENSE) for details.
 **Built with ❤️ for enterprise security teams**
 
 *Last updated: May 27, 2026*
-ENDOFFILE
-git add README.md && git commit -m "Update README: explanatory content first, Quick Start later" && git push
 ```
